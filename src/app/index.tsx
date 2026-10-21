@@ -1,98 +1,82 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState } from 'react';
+import { View, Text, TextInput, Button, FlatList } from 'react-native';
+import { Carro } from '../types/carro';
+import {carrosService} from '../api/carros.service';
+import {useCarros, useAgregarCarro } from '../hooks/useCarros'
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+//URL base de la API, tomada de variables de entorno de Expo
+// const URL = `${process.env.EXPO_PUBLIC_API_URL}patio`
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
+export default function App() {
+  // Estado para almacenar la lista de carros obtenidos del backend mockeao
+  // const [carros, setCarros] = useState < Carro [] > ([]) //setcarros funcion que utilñiza para actualizar el estado
+
+  //Estado para manejar el texto ingresado en el Input
+  const [marca, setMarca] = useState('')
+
+  //Get de tanstack query para manejar la carga, el cache y los estados
+  const {data:carros = [], isLoading, error} = useCarros()
+
+  //Post: la mutacion invlaida la query carros y la lista se refresca
+  const {mutate: agregarCarro} = useAgregarCarro();
+
+  //POST: función para agregar un nuevo carro
+  const cargar = async () => {
+    agregarCarro(marca, { onSuccess: () => setMarca('')})
   }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
+
+  //Get: funcion reutilizable apra traer la lista desde el backend
+  // const cargar = () => {
+    //carrosService.getAll().then(setCarros)
+    //console.log('GET ejecutado con axios desde pantalla index')
+    // fetch(URL) //Llamada de la API
+    //  .then(res => res.json()) //Parsear la respuesta a JSON
+    //  .then(setCarros) //Guardar en el estado "carros"
+    //console.log('GET ejecutado desde pantalla index') //Imprimirse en cada get realizado
+  // }
+  //El UseEffect se ejecuta una sola vez al montar el componente
+ // useEffect(() => { cargar() }, [])
+
+ //isLoading es true solo durante la prima carga, cuanod aun no hay datos
+ //Mientras tanto mostramos un texto en lugar de la pantalla con la lista vacía
+ if (isLoading) return <Text> Cargando...</Text>
+
+ if (error) return <Text> Error: {error.message}</Text>
+
+
+  //POST: funcion para agregar un nuevo carro
+  const agregar = async () => {
+
+    //await fetch(URL, {
+    //  method: 'POST',
+    //  headers: { 'Content-Type': 'application/json' },
+      //Enviar la marca escrita
+    //  body: JSON.stringify({ marca }),
+    //})
+
+
+    await carrosService.add(marca)
+    console.log('POST ejecutado con axios desde pantalla index')
+    cargar() //Get para refrescar la lista del home
+    //Limpeamos el input
+    setMarca('')
   }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
+    <View style={{ flex: 1, paddingTop: 60, backgroundColor: '#ffff' }}>
+      <TextInput
+        value={marca}
+        onChangeText={setMarca}
+        style={{ borderWidth: 3 }}
+      />
+      <Button title="Agregar" onPress={agregar} />
+      <FlatList
+        data={carros}
+        keyExtractor={item => item.id}
+        renderItem={({ item }) =>
+          <Text>{item.id} - {item.marca}</Text>
+        }
+      />
+    </View>
+  )
 }
-
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
-
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
-
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
-});
