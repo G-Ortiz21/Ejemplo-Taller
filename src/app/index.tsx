@@ -95,7 +95,7 @@ export default function App() {
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
       {/* Cabecera estilo Patiotuerca */}
       <View style={styles.navbar}>
-        <Text style={styles.navTitle}>Patio<Text style={styles.navSubtitle}>tuerca</Text></Text>
+        <Text style={styles.navTitle}>Patio<Text style={styles.navSubtitle}>hicle</Text></Text>
         <Text style={styles.navTagline}>Gestión de Taller y Vitrina</Text>
       </View>
 
