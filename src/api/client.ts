@@ -5,6 +5,6 @@ import axios from 'axios';
 //headers: indicar que el contendido es JSON
 
 export const client = axios.create({
-    baseURL: process.envExpo_PUBLIC_API_URL,
-    headers: { 'Content-Type' : 'aplication/json'},
+    baseURL: process.env.EXPO_PUBLIC_API_URL,
+    headers: { 'Content-Type' : 'application/json'},
 })

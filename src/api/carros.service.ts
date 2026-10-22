@@ -13,9 +13,20 @@ export const carrosService = {
         return(data)
     },
 
-    add: async (marca:string) : Promise<Carro> => {
-        const {data} = await client.post<Carro>('patio', {marca})
+    add: async (nuevoCarro: Omit<Carro, 'id'>) : Promise<Carro> => {
+        const {data} = await client.post<Carro>('patio', nuevoCarro)
         return data
+    },
+
+    // Método para eliminar
+    delete: async (id: string | number): Promise<void> => {
+        await client.delete(`patio/${id}`);
+    },
+
+    // Método para editar
+    update: async (id: string | number, carro: Omit<Carro, 'id'>): Promise<Carro> => {
+        const { data } = await client.put<Carro>(`patio/${id}`, carro);
+        return data;
     }
 }
 
